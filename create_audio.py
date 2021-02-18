@@ -6,16 +6,8 @@ import soundfile
 from glob import glob
 from moviepy.editor import VideoFileClip
 
-def create_audio():
+def create_dataset():
     video_files = glob('data/**/*.mp4', recursive=True)
-    # Create Audio files
-    for video_path in video_files:
-        audio_path = video_path.replace('data', 'raw_audio', 1).replace('mp4', 'wav')
-        os.makedirs(os.path.dirname(audio_path), exist_ok=True)
-
-        clip = VideoFileClip(video_path)
-        clip.audio.write_audiofile(audio_path)
-        clip.close()
 
     if os.path.exists('speech_dataset'):
         shutil.rmtree('speech_dataset')
@@ -67,5 +59,17 @@ def create_audio():
     filelist.close()
     print(f'End parsing, total duration: {total_duration}')
 
+def extract_audio():
+    video_files = glob('data/**/*.mp4', recursive=True)
+    # Create Audio files
+    for video_path in video_files:
+        audio_path = video_path.replace('data', 'raw_audio', 1).replace('mp4', 'wav')
+        os.makedirs(os.path.dirname(audio_path), exist_ok=True)
+
+        clip = VideoFileClip(video_path)
+        clip.audio.write_audiofile(audio_path, verbose=False)
+        clip.close()
+
 if __name__ == '__main__':
-    create_audio()
+    extract_audio()
+    create_dataset()
