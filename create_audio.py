@@ -54,7 +54,7 @@ def create_dataset():
 
                 # Write wav
                 y_part = new_y[start_idx:end_idx]
-                wav_path = f'./speech_dataset/wavs/{file_name}_{speaker_id}_{start_frame}_{end_frame}.wav'
+                wav_path = f'/path_to_speech_dataset/wavs/{file_name}_{speaker_id}_{start_frame}_{end_frame}.wav'
                 if not os.path.exists(wav_path):
                     soundfile.write(wav_path, y_part, new_sr)
 
