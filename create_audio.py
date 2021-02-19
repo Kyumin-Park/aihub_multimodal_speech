@@ -19,8 +19,11 @@ def create_dataset():
         # Load annotation file
         file_name = os.path.splitext(os.path.basename(video_path))[0]
         json_path = video_path.replace('mp4', 'json')
-        with open(json_path, 'r', encoding='utf-8') as f:
-            annotation = json.load(f)
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                annotation = json.load(f)
+        except UnicodeDecodeError:
+            continue
 
         # Load video clip
         audio_path = video_path.replace('data', 'raw_audio', 1).replace('mp4', 'wav')
@@ -74,5 +77,5 @@ def extract_audio():
         clip.close()
 
 if __name__ == '__main__':
-    extract_audio()
+    # extract_audio()
     create_dataset()
