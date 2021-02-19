@@ -24,8 +24,11 @@ def create_dataset():
 
         # Load video clip
         audio_path = video_path.replace('data', 'raw_audio', 1).replace('mp4', 'wav')
-        y, sr = librosa.load(audio_path, sr=44100)
+        orig_sr = librosa.get_samplerate(audio_path)
+        y, sr = librosa.load(audio_path, sr=orig_sr)
         duration = librosa.get_duration(y, sr=sr)
+        new_sr = 22050
+        new_y = librosa.resample(y, sr, new_sr)
 
         # Metadata
         n_frames = float(annotation['nr_frame'])
@@ -43,18 +46,18 @@ def create_dataset():
                 end_frame = text_data['script_end']
                 script = text_data['script']
 
-                start_idx = int(float(start_frame) / fps * sr)
-                end_idx = int(float(end_frame) / fps * sr)
+                start_idx = int(float(start_frame) / fps * new_sr)
+                end_idx = int(float(end_frame) / fps * new_sr)
 
                 # Write wav
-                y_part = y[start_idx:end_idx]
+                y_part = new_y[start_idx:end_idx]
                 wav_path = f'./speech_dataset/wavs/{file_name}_{speaker_id}_{start_frame}_{end_frame}.wav'
                 if not os.path.exists(wav_path):
-                    soundfile.write(wav_path, y_part, sr)
+                    soundfile.write(wav_path, y_part, new_sr)
 
                     # Write filelist
                     filelist.write(f'{wav_path}|{script}|{speaker_id}\n')
-                    total_duration += (end_idx - start_idx) / float(sr)
+                    total_duration += (end_idx - start_idx) / float(new_sr)
 
     filelist.close()
     print(f'End parsing, total duration: {total_duration}')
