@@ -26,6 +26,8 @@ Requirements:
 
 3. Run script
 ```shell
-python create_audio.py
+python create_audio.py [--convert_video]
 ```
 
+Options:
+- convert_video:_ convert mp4 video into wav form first
