@@ -26,8 +26,9 @@ Requirements:
 
 3. Run script
 ```shell
-python create_audio.py [--convert_video]
+python create_audio.py [--convert_video] [--sample_rate SR]
 ```
 
 Options:
-- convert_video:_ convert mp4 video into wav form first
+- convert_video: convert mp4 video into wav form first
+- sample_rate: sampling rate (default: 22050)

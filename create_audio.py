@@ -1,3 +1,4 @@
+import argparse
 import os
 import shutil
 import json
@@ -6,7 +7,7 @@ import soundfile
 from glob import glob
 from moviepy.editor import VideoFileClip
 
-def create_dataset():
+def create_dataset(sample_rate):
     video_files = glob('data/**/*.mp4', recursive=True)
 
     if os.path.exists('speech_dataset'):
@@ -30,7 +31,7 @@ def create_dataset():
         orig_sr = librosa.get_samplerate(audio_path)
         y, sr = librosa.load(audio_path, sr=orig_sr)
         duration = librosa.get_duration(y, sr=sr)
-        new_sr = 22050
+        new_sr = sample_rate
         new_y = librosa.resample(y, sr, new_sr)
 
         # Metadata
@@ -77,5 +78,12 @@ def extract_audio():
         clip.close()
 
 if __name__ == '__main__':
-    # extract_audio()
-    create_dataset()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--convert_video', help='convert video into .wav file', action='store_true')
+    parser.add_argument('--sample_rate', help='wav file sampling rate', type=int, default=22050)
+
+    args = parser.parse_args()
+
+    if args.convert_video:
+        extract_audio()
+    create_dataset(args.sample_rate)
