@@ -48,23 +48,33 @@ def create_dataset(sample_rate):
                 speaker_id = info_data['person_id']
                 start_frame = text_data['script_start']
                 end_frame = text_data['script_end']
-                script = text_data['script']
+                script = refine_text(text_data['script'])
 
                 start_idx = int(float(start_frame) / fps * new_sr)
                 end_idx = int(float(end_frame) / fps * new_sr)
 
                 # Write wav
                 y_part = new_y[start_idx:end_idx]
-                wav_path = f'/path_to_speech_dataset/wavs/{file_name}_{speaker_id}_{start_frame}_{end_frame}.wav'
+                wav_path = os.path.join(os.path.dirname(audio_path).replace('raw_audio', 'speech_dataset/wavs'),
+                                        f'{file_name}_{speaker_id}_{start_frame}_{end_frame}.wav')
+                wav_path_text = f'/path_to_speech_dataset/wavs/{file_name}_{speaker_id}_{start_frame}_{end_frame}.wav'
                 if not os.path.exists(wav_path):
                     soundfile.write(wav_path, y_part, new_sr)
 
                     # Write filelist
-                    filelist.write(f'{wav_path}|{script}|{speaker_id}\n')
+                    filelist.write(f'{wav_path_text}|{script}|{speaker_id}\n')
                     total_duration += (end_idx - start_idx) / float(new_sr)
 
     filelist.close()
     print(f'End parsing, total duration: {total_duration}')
+
+def refine_text(text):
+    # Fix invalid characters in text
+    text = text.replace('…', ',')
+    text = text.replace('\t', '')
+    text = text.replace('-', ',')
+    text = text.replace('–', ',')
+    return text
 
 def extract_audio():
     video_files = glob('data/**/*.mp4', recursive=True)

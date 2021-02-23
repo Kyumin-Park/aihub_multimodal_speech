@@ -24,11 +24,21 @@ Requirements:
 - moviepy==1.0.3
 - librosa==0.8.0
 
-3. Run script
+3. Create audio file
 ```shell
 python create_audio.py [--convert_video] [--sample_rate SR]
 ```
 
-Options:
+Option:
 - convert_video: convert mp4 video into wav form first
 - sample_rate: sampling rate (default: 22050)
+
+4. Split train/dev/test set
+```shell
+python split.py [--path FILELIST_PATH] [--ratio RATIO] [--seed SEED]
+```
+
+Option:
+- path: path of filelist. train/dev/test filelists are created in same directory.
+- ratio: train_ratio:dev_ratio:test_ratio. Three ratios must be splitted with ':'
+- seed: random seed for shuffling
