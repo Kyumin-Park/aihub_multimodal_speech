@@ -7,13 +7,13 @@ import soundfile
 from glob import glob
 from moviepy.editor import VideoFileClip
 
-def create_dataset(sample_rate):
-    video_files = glob('data/**/*.mp4', recursive=True)
+def create_dataset(sample_rate, input_dir, tmp_dir, output_dir):
+    video_files = glob(f'{input_dir}/**/*.mp4', recursive=True)
 
-    if os.path.exists('speech_dataset'):
-        shutil.rmtree('speech_dataset')
-    os.makedirs('speech_dataset/wavs')
-    filelist = open('./speech_dataset/filelist.txt', 'w', encoding='utf-8')
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
+    os.makedirs(f'{output_dir}/wavs')
+    filelist = open(f'{output_dir}/filelist.txt', 'w', encoding='utf-8')
     total_duration = 0
 
     for video_path in video_files:
@@ -27,7 +27,7 @@ def create_dataset(sample_rate):
             continue
 
         # Load video clip
-        audio_path = video_path.replace('data', 'raw_audio', 1).replace('mp4', 'wav')
+        audio_path = video_path.replace(input_dir, tmp_dir, 1).replace('mp4', 'wav')
         orig_sr = librosa.get_samplerate(audio_path)
         y, sr = librosa.load(audio_path, sr=orig_sr)
         duration = librosa.get_duration(y, sr=sr)
@@ -55,10 +55,11 @@ def create_dataset(sample_rate):
 
                 # Write wav
                 y_part = new_y[start_idx:end_idx]
-                wav_path = os.path.join(os.path.dirname(audio_path).replace('raw_audio', 'speech_dataset/wavs'),
+                wav_path = os.path.join(os.path.dirname(audio_path).replace(tmp_dir, f'{output_dir}/wavs'),
                                         f'{file_name}_{speaker_id}_{start_frame}_{end_frame}.wav')
                 wav_path_text = f'/path_to_speech_dataset/wavs/{file_name}_{speaker_id}_{start_frame}_{end_frame}.wav'
                 if not os.path.exists(wav_path):
+                    os.makedirs(os.path.dirname(wav_path), exist_ok=True)
                     soundfile.write(wav_path, y_part, new_sr)
 
                     # Write filelist
@@ -76,11 +77,11 @@ def refine_text(text):
     text = text.replace('–', ',')
     return text
 
-def extract_audio():
-    video_files = glob('data/**/*.mp4', recursive=True)
+def extract_audio(input_dir, output_dir):
+    video_files = glob(f'{input_dir}/**/*.mp4', recursive=True)
     # Create Audio files
     for video_path in video_files:
-        audio_path = video_path.replace('data', 'raw_audio', 1).replace('mp4', 'wav')
+        audio_path = video_path.replace(input_dir, output_dir, 1).replace('mp4', 'wav')
         os.makedirs(os.path.dirname(audio_path), exist_ok=True)
 
         clip = VideoFileClip(video_path)
@@ -91,9 +92,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--convert_video', help='convert video into .wav file', action='store_true')
     parser.add_argument('--sample_rate', help='wav file sampling rate', type=int, default=22050)
+    parser.add_argument('--input_dir', help='input directory', type=str)
+    parser.add_argument('--tmp_dir', help='temporary directory', type=str)
+    parser.add_argument('--output_dir', help='output directory', type=str)
 
     args = parser.parse_args()
 
     if args.convert_video:
-        extract_audio()
-    create_dataset(args.sample_rate)
+        extract_audio(args.input_dir, args.tmp_dir)
+    create_dataset(args.sample_rate, args.input_dir, args.tmp_dir, args.output_dir)
